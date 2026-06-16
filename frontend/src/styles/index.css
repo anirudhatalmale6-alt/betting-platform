@@ -1,0 +1,88 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: #0f172a;
+  color: #e2e8f0;
+  min-height: 100vh;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #1e293b;
+}
+::-webkit-scrollbar-thumb {
+  background: #475569;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
+}
+
+.odds-flash {
+  animation: flash 0.3s ease-out;
+}
+@keyframes flash {
+  0% { background-color: rgba(249, 115, 22, 0.3); }
+  100% { background-color: transparent; }
+}
+
+.odds-up {
+  animation: greenFlash 0.5s ease-out;
+}
+.odds-down {
+  animation: redFlash 0.5s ease-out;
+}
+@keyframes greenFlash {
+  0% { background-color: rgba(16, 185, 129, 0.4); }
+  100% { background-color: transparent; }
+}
+@keyframes redFlash {
+  0% { background-color: rgba(239, 68, 68, 0.4); }
+  100% { background-color: transparent; }
+}
+
+.live-pulse {
+  animation: pulse 2s infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.marquee {
+  animation: marquee 30s linear infinite;
+}
+@keyframes marquee {
+  0% { transform: translateX(100%); }
+  100% { transform: translateX(-100%); }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-primary-500 hover:bg-primary-600 text-white px-4 py-2 rounded-lg font-semibold transition-colors;
+  }
+  .btn-back {
+    @apply bg-back hover:bg-back-dark text-dark-900 px-3 py-1.5 rounded font-semibold transition-colors text-sm;
+  }
+  .btn-lay {
+    @apply bg-lay hover:bg-lay-dark text-dark-900 px-3 py-1.5 rounded font-semibold transition-colors text-sm;
+  }
+  .card {
+    @apply bg-dark-800 border border-dark-700 rounded-xl;
+  }
+  .input-field {
+    @apply bg-dark-900 border border-dark-600 text-white px-3 py-2 rounded-lg focus:outline-none focus:border-primary-500 w-full;
+  }
+}
