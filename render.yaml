@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: betting-platform
+    runtime: node
+    plan: free
+    buildCommand: cd frontend && npm install && npm run build && cd ../backend && npm install && node migrations/run-sqlite.js && node seeds/run-sqlite.js
+    startCommand: cd backend && node server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DB_ENGINE
+        value: sqlite
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      - key: FRONTEND_URL
+        value: '*'
+      - key: PORT
+        value: 10000
