@@ -10,9 +10,23 @@ export default function HomePage() {
   const sportFilter = searchParams.get('sport');
   const socket = useSocket();
 
+  useEffect(() => { loadEvents(); }, [sportFilter]);
+
   useEffect(() => {
-    loadEvents();
-  }, [sportFilter]);
+    if (!socket) return;
+    socket.on('odds_update', (data) => {
+      setEvents(prev => prev.map(ev => {
+        if (ev.id !== data.event_id) return ev;
+        return { ...ev, _oddsUpdate: data.runners, _flash: Date.now() };
+      }));
+    });
+    socket.on('score_update', (data) => {
+      setEvents(prev => prev.map(ev =>
+        ev.id === data.event_id ? { ...ev, score_a: data.score_a, score_b: data.score_b } : ev
+      ));
+    });
+    return () => { socket.off('odds_update'); socket.off('score_update'); };
+  }, [socket]);
 
   const loadEvents = async () => {
     try {
@@ -20,122 +34,129 @@ export default function HomePage() {
       if (sportFilter) params.sport_id = sportFilter;
       const { data } = await eventsAPI.getEvents(params);
       setEvents(data);
-    } catch (error) {
-      console.error('Failed to load events');
-    }
+    } catch (e) { console.error('Failed to load events'); }
     setLoading(false);
   };
 
   const liveEvents = events.filter(e => e.is_live);
   const upcomingEvents = events.filter(e => !e.is_live && e.status !== 'completed');
 
-  const sportIcons = { cricket: '🏏', football: '⚽', tennis: '🎾' };
-
-  if (loading) return <div className="text-center py-20 text-dark-400">Loading events...</div>;
+  if (loading) return <div className="text-center py-20 text-dark-400">Loading...</div>;
 
   return (
-    <div className="space-y-6">
-      {/* Live Events */}
+    <div className="space-y-3">
+      {/* Live Events Section */}
       {liveEvents.length > 0 && (
-        <section>
-          <div className="flex items-center gap-2 mb-3">
-            <span className="live-pulse inline-block w-2 h-2 bg-red-500 rounded-full"></span>
-            <h2 className="text-lg font-bold text-white">LIVE NOW</h2>
-            <span className="text-sm text-dark-400">({liveEvents.length} events)</span>
+        <div>
+          <div className="flex items-center gap-2 px-1 mb-2">
+            <span className="live-pulse w-2 h-2 bg-accent-red rounded-full inline-block"></span>
+            <span className="text-sm font-bold text-white uppercase tracking-wide">Live Events</span>
+            <span className="text-xs text-dark-400">({liveEvents.length})</span>
           </div>
-          <div className="space-y-2">
-            {liveEvents.map(event => (
-              <EventCard key={event.id} event={event} sportIcons={sportIcons} />
+
+          {/* Column Headers */}
+          <div className="hidden sm:flex items-center bg-dark-800 rounded-t border border-dark-700 px-3 py-1.5 text-[10px] text-dark-400 font-semibold uppercase">
+            <div className="flex-1">Event</div>
+            <div className="flex gap-0.5">
+              <div className="w-[60px] text-center">1</div>
+              <div className="w-[60px] text-center">X</div>
+              <div className="w-[60px] text-center">2</div>
+            </div>
+          </div>
+
+          <div className="space-y-0.5">
+            {liveEvents.map((event, i) => (
+              <EventRow key={event.id} event={event} isFirst={i === 0} />
             ))}
           </div>
-        </section>
+        </div>
       )}
 
       {/* Upcoming */}
       {upcomingEvents.length > 0 && (
-        <section>
-          <h2 className="text-lg font-bold text-white mb-3">UPCOMING</h2>
-          <div className="space-y-2">
+        <div>
+          <div className="flex items-center gap-2 px-1 mb-2 mt-4">
+            <span className="text-sm font-bold text-dark-300 uppercase tracking-wide">Upcoming Events</span>
+          </div>
+          <div className="space-y-0.5">
             {upcomingEvents.map(event => (
-              <EventCard key={event.id} event={event} sportIcons={sportIcons} />
+              <EventRow key={event.id} event={event} />
             ))}
           </div>
-        </section>
+        </div>
       )}
 
       {events.length === 0 && (
-        <div className="text-center py-20 text-dark-400">
-          <p className="text-2xl mb-2">🏏</p>
-          <p>No events available right now.</p>
+        <div className="text-center py-16">
+          <div className="text-4xl mb-3">🏏</div>
+          <div className="text-dark-400">No events available right now</div>
+          <div className="text-dark-500 text-sm mt-1">Check back soon for live matches!</div>
         </div>
       )}
     </div>
   );
 }
 
-function EventCard({ event, sportIcons }) {
+function EventRow({ event }) {
   const startTime = new Date(event.start_time);
   const timeStr = startTime.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
   const dateStr = startTime.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+  const sportIcons = { cricket: '🏏', football: '⚽', tennis: '🎾' };
 
   return (
-    <Link to={`/event/${event.id}`} className="card block hover:border-primary-500/50 transition-colors">
-      <div className="p-4">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2">
-            <span>{sportIcons[event.sport_slug] || '🏅'}</span>
-            <span className="text-xs text-dark-400">{event.tournament_name || event.sport_name}</span>
-          </div>
-          <div className="flex items-center gap-2">
+    <Link to={`/event/${event.id}`} className="block bg-dark-800 border border-dark-700 hover:border-primary-500/40 transition-all">
+      <div className="flex items-stretch">
+        {/* Left: Event Info */}
+        <div className="flex-1 p-2.5 min-w-0">
+          {/* Tournament */}
+          <div className="flex items-center gap-1.5 mb-1.5">
+            <span className="text-sm">{sportIcons[event.sport_slug] || '🏅'}</span>
+            <span className="text-[10px] text-dark-500 truncate">{event.tournament_name}</span>
             {event.is_live ? (
-              <span className="flex items-center gap-1 px-2 py-0.5 bg-red-500/20 text-red-400 rounded-full text-xs font-semibold">
-                <span className="live-pulse w-1.5 h-1.5 bg-red-500 rounded-full inline-block"></span> LIVE
+              <span className="flex items-center gap-1 ml-auto px-1.5 py-0.5 bg-accent-red/20 rounded text-[10px] text-accent-red font-bold">
+                <span className="live-pulse w-1 h-1 bg-accent-red rounded-full inline-block"></span>LIVE
               </span>
             ) : (
-              <span className="text-xs text-dark-400">{dateStr} {timeStr}</span>
+              <span className="ml-auto text-[10px] text-dark-500">{dateStr} {timeStr}</span>
             )}
-            {event.tv_channel && <span className="text-xs text-dark-500">📺 {event.tv_channel}</span>}
           </div>
-        </div>
 
-        {/* Teams */}
-        <div className="flex items-center justify-between">
-          <div className="flex-1">
-            <div className="flex items-center justify-between mb-2">
-              <div>
-                <span className="font-semibold text-white">{event.team_a}</span>
-                {event.is_live && event.score_a !== '0' && (
-                  <span className="ml-2 text-primary-400 text-sm font-mono">{event.score_a}</span>
-                )}
-              </div>
+          {/* Teams */}
+          <div className="space-y-0.5">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold text-white truncate">{event.team_a}</span>
+              {event.is_live && event.score_a !== '0' && (
+                <span className="text-xs text-primary-400 font-mono font-bold ml-2 shrink-0">{event.score_a}</span>
+              )}
             </div>
             <div className="flex items-center justify-between">
-              <div>
-                <span className="font-semibold text-white">{event.team_b}</span>
-                {event.is_live && event.score_b !== '0' && (
-                  <span className="ml-2 text-primary-400 text-sm font-mono">{event.score_b}</span>
-                )}
-              </div>
+              <span className="text-xs font-semibold text-white truncate">{event.team_b}</span>
+              {event.is_live && event.score_b !== '0' && (
+                <span className="text-xs text-primary-400 font-mono font-bold ml-2 shrink-0">{event.score_b}</span>
+              )}
             </div>
           </div>
 
-          {/* Mini Odds */}
-          <div className="flex gap-1 ml-4">
-            <div className="text-center">
-              <div className="text-[10px] text-dark-400 mb-0.5">BACK</div>
-              <div className="bg-back/20 text-back-dark px-3 py-1 rounded text-sm font-bold">-</div>
-            </div>
-            <div className="text-center">
-              <div className="text-[10px] text-dark-400 mb-0.5">LAY</div>
-              <div className="bg-lay/20 text-lay-dark px-3 py-1 rounded text-sm font-bold">-</div>
-            </div>
+          <div className="flex items-center gap-2 mt-1.5">
+            <span className="text-[10px] text-dark-500">{event.open_markets || 0} markets</span>
+            {event.is_live && <span className="text-[10px] text-accent-green">● In-Play</span>}
           </div>
         </div>
 
-        {/* Markets count */}
-        <div className="mt-2 pt-2 border-t border-dark-700">
-          <span className="text-xs text-dark-400">{event.open_markets || 0} markets available</span>
+        {/* Right: Back/Lay Odds Boxes */}
+        <div className="flex items-center gap-0.5 pr-2 py-2">
+          <div className="flex flex-col gap-0.5">
+            <div className="text-[8px] text-center text-back-dark font-bold">BACK</div>
+            <div className="back-btn w-[52px] sm:w-[60px] py-1.5 rounded text-center">
+              <div className="text-xs font-bold">-</div>
+            </div>
+          </div>
+          <div className="flex flex-col gap-0.5">
+            <div className="text-[8px] text-center text-lay-dark font-bold">LAY</div>
+            <div className="lay-btn w-[52px] sm:w-[60px] py-1.5 rounded text-center">
+              <div className="text-xs font-bold">-</div>
+            </div>
+          </div>
         </div>
       </div>
     </Link>

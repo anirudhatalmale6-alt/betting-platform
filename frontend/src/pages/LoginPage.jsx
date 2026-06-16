@@ -28,69 +28,77 @@ export default function LoginPage() {
     setLoading(false);
   };
 
-  const demoLogin = async (role) => {
+  const demoLogin = async (username, password, label) => {
     setLoading(true);
     try {
-      const creds = { admin: ['admin', 'admin123'], bookmaker: ['bookmaker1', 'bookmaker123'], player: ['demo', 'player123'] };
-      await login(creds[role][0], creds[role][1]);
-      toast.success(`Logged in as ${role}`);
+      await login(username, password);
+      toast.success(`Logged in as ${label}`);
       navigate('/');
-    } catch (error) {
-      toast.error('Demo login failed');
-    }
+    } catch (error) { toast.error('Demo login failed'); }
     setLoading(false);
   };
 
   return (
     <div className="min-h-screen bg-dark-950 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-primary-500 rounded-2xl flex items-center justify-center font-bold text-white text-2xl mx-auto mb-4">BP</div>
-          <h1 className="text-3xl font-bold text-white">Betting<span className="text-primary-500">Pro</span></h1>
-          <p className="text-dark-400 mt-1">India's #1 Betting Exchange</p>
+      <div className="w-full max-w-sm">
+        {/* Logo */}
+        <div className="text-center mb-6">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-primary-400 to-primary-600 rounded-xl mb-3">
+            <span className="text-3xl font-black text-dark-900">BP</span>
+          </div>
+          <h1 className="text-2xl font-black text-white">BETTING<span className="text-primary-400">PRO</span></h1>
+          <p className="text-xs text-dark-400 mt-1">India's #1 Betting Exchange</p>
         </div>
 
-        <div className="card p-6">
-          <div className="flex mb-6 bg-dark-900 rounded-lg p-1">
-            <button onClick={() => setIsRegister(false)} className={`flex-1 py-2 rounded-md text-sm font-medium transition-colors ${!isRegister ? 'bg-primary-500 text-white' : 'text-dark-400'}`}>Login</button>
-            <button onClick={() => setIsRegister(true)} className={`flex-1 py-2 rounded-md text-sm font-medium transition-colors ${isRegister ? 'bg-primary-500 text-white' : 'text-dark-400'}`}>Register</button>
+        {/* Quick Demo */}
+        <div className="bg-dark-800 border border-dark-700 rounded-lg p-3 mb-3">
+          <div className="text-[10px] text-dark-400 font-semibold mb-2 text-center uppercase">Quick Demo Login</div>
+          <div className="grid grid-cols-3 gap-2">
+            <button onClick={() => demoLogin('admin', 'admin123', 'Admin')} disabled={loading}
+              className="bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-500 hover:to-purple-600 text-white py-2 rounded text-xs font-bold transition-all disabled:opacity-50">
+              ⚙️ Admin
+            </button>
+            <button onClick={() => demoLogin('bookmaker1', 'bookmaker123', 'Bookmaker')} disabled={loading}
+              className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 text-white py-2 rounded text-xs font-bold transition-all disabled:opacity-50">
+              📊 Bookmaker
+            </button>
+            <button onClick={() => demoLogin('player1', 'player123', 'Player')} disabled={loading}
+              className="bg-gradient-to-r from-green-600 to-emerald-700 hover:from-green-500 hover:to-emerald-600 text-white py-2 rounded text-xs font-bold transition-all disabled:opacity-50">
+              🎮 Player
+            </button>
+          </div>
+        </div>
+
+        {/* Form */}
+        <div className="bg-dark-800 border border-dark-700 rounded-lg p-4">
+          <div className="flex mb-4 bg-dark-900 rounded p-0.5">
+            <button onClick={() => setIsRegister(false)} className={`flex-1 py-2 rounded text-xs font-bold transition-all ${!isRegister ? 'bg-primary-500 text-dark-900' : 'text-dark-400'}`}>
+              LOGIN
+            </button>
+            <button onClick={() => setIsRegister(true)} className={`flex-1 py-2 rounded text-xs font-bold transition-all ${isRegister ? 'bg-primary-500 text-dark-900' : 'text-dark-400'}`}>
+              REGISTER
+            </button>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-sm text-dark-400 mb-1">Username</label>
-              <input type="text" className="input-field" value={form.username} onChange={e => setForm({ ...form, username: e.target.value })} required />
-            </div>
-            <div>
-              <label className="block text-sm text-dark-400 mb-1">Password</label>
-              <input type="password" className="input-field" value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} required />
-            </div>
+          <form onSubmit={handleSubmit} className="space-y-3">
+            <input type="text" placeholder="Username" required className="input-field"
+              value={form.username} onChange={e => setForm({ ...form, username: e.target.value })} />
+            <input type="password" placeholder="Password" required className="input-field"
+              value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} />
             {isRegister && (
               <>
-                <div>
-                  <label className="block text-sm text-dark-400 mb-1">Full Name</label>
-                  <input type="text" className="input-field" value={form.full_name} onChange={e => setForm({ ...form, full_name: e.target.value })} />
-                </div>
-                <div>
-                  <label className="block text-sm text-dark-400 mb-1">Phone</label>
-                  <input type="text" className="input-field" value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} />
-                </div>
+                <input type="text" placeholder="Full Name" className="input-field" value={form.full_name} onChange={e => setForm({ ...form, full_name: e.target.value })} />
+                <input type="tel" placeholder="Phone Number" className="input-field" value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} />
               </>
             )}
-            <button type="submit" disabled={loading} className="btn-primary w-full py-3 disabled:opacity-50">
-              {loading ? 'Please wait...' : isRegister ? 'Create Account' : 'Login'}
+            <button type="submit" disabled={loading}
+              className="w-full py-3 bg-gradient-to-r from-primary-500 to-primary-400 hover:from-primary-600 hover:to-primary-500 rounded font-black text-dark-900 text-sm transition-all disabled:opacity-50">
+              {loading ? 'Please wait...' : isRegister ? 'CREATE ACCOUNT' : 'LOGIN'}
             </button>
           </form>
-
-          <div className="mt-6 pt-4 border-t border-dark-700">
-            <p className="text-dark-400 text-sm text-center mb-3">Quick Demo Login</p>
-            <div className="grid grid-cols-3 gap-2">
-              <button onClick={() => demoLogin('admin')} className="bg-red-500/20 text-red-400 py-2 rounded-lg text-xs font-medium hover:bg-red-500/30 transition-colors">Admin</button>
-              <button onClick={() => demoLogin('bookmaker')} className="bg-blue-500/20 text-blue-400 py-2 rounded-lg text-xs font-medium hover:bg-blue-500/30 transition-colors">Bookmaker</button>
-              <button onClick={() => demoLogin('player')} className="bg-green-500/20 text-green-400 py-2 rounded-lg text-xs font-medium hover:bg-green-500/30 transition-colors">Player</button>
-            </div>
-          </div>
         </div>
+
+        <div className="text-center mt-4 text-[10px] text-dark-500">Play Responsibly | 18+ Only</div>
       </div>
     </div>
   );
