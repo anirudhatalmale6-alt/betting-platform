@@ -3,11 +3,25 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { eventsAPI } from '../services/api';
 import { useSocket } from '../contexts/SocketContext';
 
+const CASINO_PROVIDERS = [
+  { name: 'Ezugi', color: 'from-pink-500 to-pink-700', icon: '🎰' },
+  { name: 'Evolution', color: 'from-orange-500 to-red-600', icon: '🃏' },
+  { name: 'Turbo Games', color: 'from-blue-500 to-cyan-600', icon: '⚡' },
+  { name: 'JILI', color: 'from-orange-400 to-orange-600', icon: '🎮' },
+  { name: 'Spribe', color: 'from-purple-500 to-purple-700', icon: '📈' },
+  { name: 'SmartSoft', color: 'from-blue-600 to-blue-800', icon: '🎲' },
+  { name: 'Bombay Live', color: 'from-red-600 to-red-800', icon: '🇮🇳' },
+  { name: 'Kingmaker', color: 'from-yellow-600 to-orange-600', icon: '👑' },
+  { name: 'Virtual Games', color: 'from-green-500 to-emerald-700', icon: '🖥️' },
+  { name: 'Bikini Games', color: 'from-pink-400 to-rose-600', icon: '🎪' },
+];
+
 export default function HomePage() {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchParams] = useSearchParams();
   const sportFilter = searchParams.get('sport');
+  const inplay = searchParams.get('inplay');
   const socket = useSocket();
 
   useEffect(() => { loadEvents(); }, [sportFilter]);
@@ -15,15 +29,10 @@ export default function HomePage() {
   useEffect(() => {
     if (!socket) return;
     socket.on('odds_update', (data) => {
-      setEvents(prev => prev.map(ev => {
-        if (ev.id !== data.event_id) return ev;
-        return { ...ev, _oddsUpdate: data.runners, _flash: Date.now() };
-      }));
+      setEvents(prev => prev.map(ev => ev.id === data.event_id ? { ...ev, _oddsUpdate: data.runners } : ev));
     });
     socket.on('score_update', (data) => {
-      setEvents(prev => prev.map(ev =>
-        ev.id === data.event_id ? { ...ev, score_a: data.score_a, score_b: data.score_b } : ev
-      ));
+      setEvents(prev => prev.map(ev => ev.id === data.event_id ? { ...ev, score_a: data.score_a, score_b: data.score_b } : ev));
     });
     return () => { socket.off('odds_update'); socket.off('score_update'); };
   }, [socket]);
@@ -34,63 +43,70 @@ export default function HomePage() {
       if (sportFilter) params.sport_id = sportFilter;
       const { data } = await eventsAPI.getEvents(params);
       setEvents(data);
-    } catch (e) { console.error('Failed to load events'); }
+    } catch (e) {}
     setLoading(false);
   };
 
   const liveEvents = events.filter(e => e.is_live);
   const upcomingEvents = events.filter(e => !e.is_live && e.status !== 'completed');
+  const displayLive = inplay ? liveEvents : liveEvents;
+  const displayUpcoming = inplay ? [] : upcomingEvents;
 
-  if (loading) return <div className="text-center py-20 text-dark-400">Loading...</div>;
+  if (loading) return <div className="text-center py-20 text-gray-400">Loading...</div>;
 
   return (
-    <div className="space-y-3">
-      {/* Live Events Section */}
-      {liveEvents.length > 0 && (
-        <div>
-          <div className="flex items-center gap-2 px-1 mb-2">
-            <span className="live-pulse w-2 h-2 bg-accent-red rounded-full inline-block"></span>
-            <span className="text-sm font-bold text-white uppercase tracking-wide">Live Events</span>
-            <span className="text-xs text-dark-400">({liveEvents.length})</span>
-          </div>
-
-          {/* Column Headers */}
-          <div className="hidden sm:flex items-center bg-dark-800 rounded-t border border-dark-700 px-3 py-1.5 text-[10px] text-dark-400 font-semibold uppercase">
-            <div className="flex-1">Event</div>
-            <div className="flex gap-0.5">
-              <div className="w-[60px] text-center">1</div>
-              <div className="w-[60px] text-center">X</div>
-              <div className="w-[60px] text-center">2</div>
-            </div>
-          </div>
-
-          <div className="space-y-0.5">
-            {liveEvents.map((event, i) => (
-              <EventRow key={event.id} event={event} isFirst={i === 0} />
+    <div className="space-y-2">
+      {/* Casino Providers Banner */}
+      {!sportFilter && !inplay && (
+        <div className="card">
+          <div className="section-header">🎰 CASINO PROVIDER</div>
+          <div className="grid grid-cols-5 sm:grid-cols-5 md:grid-cols-10 gap-0.5 p-1 bg-gray-100">
+            {CASINO_PROVIDERS.map(prov => (
+              <Link key={prov.name} to="/casino" className={`bg-gradient-to-br ${prov.color} rounded p-3 text-center hover:scale-105 transition-transform`}>
+                <div className="text-2xl mb-1">{prov.icon}</div>
+                <div className="text-white text-[9px] font-bold leading-tight">{prov.name}</div>
+              </Link>
             ))}
           </div>
         </div>
       )}
 
-      {/* Upcoming */}
-      {upcomingEvents.length > 0 && (
-        <div>
-          <div className="flex items-center gap-2 px-1 mb-2 mt-4">
-            <span className="text-sm font-bold text-dark-300 uppercase tracking-wide">Upcoming Events</span>
+      {/* Live Events */}
+      {displayLive.length > 0 && (
+        <div className="card">
+          <div className="section-header">
+            <span className="live-pulse w-2 h-2 bg-red-400 rounded-full inline-block"></span>
+            LIVE EVENTS ({displayLive.length})
           </div>
-          <div className="space-y-0.5">
-            {upcomingEvents.map(event => (
-              <EventRow key={event.id} event={event} />
-            ))}
+          {/* Column header */}
+          <div className="hidden sm:flex items-center bg-gray-100 px-3 py-1 text-[10px] text-gray-500 font-semibold border-b">
+            <div className="flex-1">Event</div>
+            <div className="w-[132px] flex text-center">
+              <span className="w-[66px] text-back-dark">BACK</span>
+              <span className="w-[66px] text-lay-dark">LAY</span>
+            </div>
           </div>
+          {displayLive.map(event => (
+            <EventRow key={event.id} event={event} />
+          ))}
+        </div>
+      )}
+
+      {/* Upcoming Events */}
+      {displayUpcoming.length > 0 && (
+        <div className="card">
+          <div className="section-header-green">📅 UPCOMING EVENTS</div>
+          {displayUpcoming.map(event => (
+            <EventRow key={event.id} event={event} />
+          ))}
         </div>
       )}
 
       {events.length === 0 && (
-        <div className="text-center py-16">
+        <div className="card p-12 text-center">
           <div className="text-4xl mb-3">🏏</div>
-          <div className="text-dark-400">No events available right now</div>
-          <div className="text-dark-500 text-sm mt-1">Check back soon for live matches!</div>
+          <div className="text-gray-500">No events available right now</div>
+          <div className="text-gray-400 text-sm mt-1">Check back soon for live matches!</div>
         </div>
       )}
     </div>
@@ -104,59 +120,44 @@ function EventRow({ event }) {
   const sportIcons = { cricket: '🏏', football: '⚽', tennis: '🎾' };
 
   return (
-    <Link to={`/event/${event.id}`} className="block bg-dark-800 border border-dark-700 hover:border-primary-500/40 transition-all">
-      <div className="flex items-stretch">
-        {/* Left: Event Info */}
-        <div className="flex-1 p-2.5 min-w-0">
-          {/* Tournament */}
-          <div className="flex items-center gap-1.5 mb-1.5">
-            <span className="text-sm">{sportIcons[event.sport_slug] || '🏅'}</span>
-            <span className="text-[10px] text-dark-500 truncate">{event.tournament_name}</span>
-            {event.is_live ? (
-              <span className="flex items-center gap-1 ml-auto px-1.5 py-0.5 bg-accent-red/20 rounded text-[10px] text-accent-red font-bold">
-                <span className="live-pulse w-1 h-1 bg-accent-red rounded-full inline-block"></span>LIVE
-              </span>
-            ) : (
-              <span className="ml-auto text-[10px] text-dark-500">{dateStr} {timeStr}</span>
+    <Link to={`/event/${event.id}`} className="flex items-center px-3 py-2 border-b border-gray-100 hover:bg-blue-50/50 transition-colors">
+      {/* Event Info */}
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-1.5 mb-1">
+          <span className="text-sm">{sportIcons[event.sport_slug] || '🏅'}</span>
+          <span className="text-[10px] text-gray-400 truncate">{event.tournament_name}</span>
+          {event.is_live ? (
+            <span className="flex items-center gap-1 ml-1 px-1.5 py-0.5 bg-red-100 rounded text-[10px] text-red-600 font-bold">
+              <span className="live-pulse w-1 h-1 bg-red-500 rounded-full inline-block"></span>LIVE
+            </span>
+          ) : (
+            <span className="ml-auto text-[10px] text-gray-400">{dateStr} {timeStr}</span>
+          )}
+        </div>
+        <div className="space-y-0.5">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-gray-800 truncate">{event.team_a}</span>
+            {event.is_live && event.score_a !== '0' && (
+              <span className="text-xs text-blue-600 font-mono font-bold ml-2 shrink-0">{event.score_a}</span>
             )}
           </div>
-
-          {/* Teams */}
-          <div className="space-y-0.5">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-white truncate">{event.team_a}</span>
-              {event.is_live && event.score_a !== '0' && (
-                <span className="text-xs text-primary-400 font-mono font-bold ml-2 shrink-0">{event.score_a}</span>
-              )}
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-white truncate">{event.team_b}</span>
-              {event.is_live && event.score_b !== '0' && (
-                <span className="text-xs text-primary-400 font-mono font-bold ml-2 shrink-0">{event.score_b}</span>
-              )}
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2 mt-1.5">
-            <span className="text-[10px] text-dark-500">{event.open_markets || 0} markets</span>
-            {event.is_live && <span className="text-[10px] text-accent-green">● In-Play</span>}
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-gray-800 truncate">{event.team_b}</span>
+            {event.is_live && event.score_b !== '0' && (
+              <span className="text-xs text-blue-600 font-mono font-bold ml-2 shrink-0">{event.score_b}</span>
+            )}
           </div>
         </div>
+        <div className="text-[10px] text-gray-400 mt-1">{event.open_markets || 0} markets</div>
+      </div>
 
-        {/* Right: Back/Lay Odds Boxes */}
-        <div className="flex items-center gap-0.5 pr-2 py-2">
-          <div className="flex flex-col gap-0.5">
-            <div className="text-[8px] text-center text-back-dark font-bold">BACK</div>
-            <div className="back-btn w-[52px] sm:w-[60px] py-1.5 rounded text-center">
-              <div className="text-xs font-bold">-</div>
-            </div>
-          </div>
-          <div className="flex flex-col gap-0.5">
-            <div className="text-[8px] text-center text-lay-dark font-bold">LAY</div>
-            <div className="lay-btn w-[52px] sm:w-[60px] py-1.5 rounded text-center">
-              <div className="text-xs font-bold">-</div>
-            </div>
-          </div>
+      {/* Back/Lay boxes */}
+      <div className="flex gap-0.5 ml-2">
+        <div className="back-btn w-[64px] py-2 rounded text-center">
+          <div className="text-xs font-bold">-</div>
+        </div>
+        <div className="lay-btn w-[64px] py-2 rounded text-center">
+          <div className="text-xs font-bold">-</div>
         </div>
       </div>
     </Link>

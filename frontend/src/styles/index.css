@@ -6,14 +6,14 @@
 
 body {
   font-family: 'Inter', -apple-system, sans-serif;
-  background-color: #0d1520;
-  color: #e2e8f0;
+  background-color: #dde2e8;
+  color: #1e293b;
   min-height: 100vh;
 }
 
 ::-webkit-scrollbar { width: 5px; height: 5px; }
-::-webkit-scrollbar-track { background: #1a2332; }
-::-webkit-scrollbar-thumb { background: #3b4a5c; border-radius: 3px; }
+::-webkit-scrollbar-track { background: #c8cfd8; }
+::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 3px; }
 
 .live-pulse { animation: pulse 1.5s infinite; }
 @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
@@ -26,13 +26,16 @@ body {
 
 @layer components {
   .btn-primary {
-    @apply bg-gradient-to-r from-primary-500 to-primary-400 hover:from-primary-600 hover:to-primary-500 text-dark-900 px-4 py-2 rounded font-bold transition-all text-sm;
+    @apply bg-brand-600 hover:bg-brand-700 text-white px-4 py-2 rounded font-bold transition-all text-sm;
+  }
+  .btn-gold {
+    @apply bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-dark-900 px-4 py-2 rounded font-bold transition-all text-sm;
   }
   .card {
-    @apply bg-dark-800 border border-dark-700 rounded-lg overflow-hidden;
+    @apply bg-white rounded shadow-sm overflow-hidden;
   }
   .input-field {
-    @apply bg-dark-900 border border-dark-600 text-white px-3 py-2 rounded focus:outline-none focus:border-primary-500 w-full text-sm;
+    @apply bg-white border border-gray-300 text-dark-900 px-3 py-2 rounded focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 w-full text-sm;
   }
   .back-btn {
     @apply bg-back hover:bg-back-dark text-dark-900 font-bold text-sm cursor-pointer transition-all;
@@ -40,13 +43,10 @@ body {
   .lay-btn {
     @apply bg-lay hover:bg-lay-dark text-dark-900 font-bold text-sm cursor-pointer transition-all;
   }
-  .sport-tab {
-    @apply px-3 py-2 text-sm font-semibold cursor-pointer transition-all whitespace-nowrap border-b-2;
+  .section-header {
+    @apply bg-brand-700 text-white px-3 py-1.5 text-sm font-bold flex items-center gap-2;
   }
-  .sport-tab-active {
-    @apply border-primary-400 text-primary-400;
-  }
-  .sport-tab-inactive {
-    @apply border-transparent text-dark-400 hover:text-dark-200;
+  .section-header-green {
+    @apply bg-green-600 text-white px-3 py-1.5 text-sm font-bold flex items-center gap-2;
   }
 }

@@ -14,91 +14,102 @@ export default function LoginPage() {
     e.preventDefault();
     setLoading(true);
     try {
-      if (isRegister) {
-        await register(form);
-        toast.success('Account created!');
-      } else {
-        await login(form.username, form.password);
-        toast.success('Welcome back!');
-      }
+      if (isRegister) { await register(form); toast.success('Account created!'); }
+      else { await login(form.username, form.password); toast.success('Welcome back!'); }
       navigate('/');
-    } catch (error) {
-      toast.error(error.response?.data?.error || 'Login failed');
-    }
+    } catch (error) { toast.error(error.response?.data?.error || 'Login failed'); }
     setLoading(false);
   };
 
-  const demoLogin = async (username, password, label) => {
+  const demoLogin = async () => {
     setLoading(true);
-    try {
-      await login(username, password);
-      toast.success(`Logged in as ${label}`);
-      navigate('/');
-    } catch (error) { toast.error('Demo login failed'); }
+    try { await login('demo', 'player123'); toast.success('Demo mode active!'); navigate('/'); }
+    catch (error) { toast.error('Demo login failed'); }
+    setLoading(false);
+  };
+
+  const quickLogin = async (username, password, label) => {
+    setLoading(true);
+    try { await login(username, password); toast.success(`Logged in as ${label}`); navigate('/'); }
+    catch (error) { toast.error('Login failed'); }
     setLoading(false);
   };
 
   return (
-    <div className="min-h-screen bg-dark-950 flex items-center justify-center p-4">
-      <div className="w-full max-w-sm">
-        {/* Logo */}
-        <div className="text-center mb-6">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-primary-400 to-primary-600 rounded-xl mb-3">
-            <span className="text-3xl font-black text-dark-900">BP</span>
-          </div>
-          <h1 className="text-2xl font-black text-white">BETTING<span className="text-primary-400">PRO</span></h1>
-          <p className="text-xs text-dark-400 mt-1">India's #1 Betting Exchange</p>
-        </div>
+    <div className="min-h-screen bg-surface-light flex items-center justify-center p-4">
+      <div className="w-full max-w-md">
+        {/* Login Card - Reddybook style */}
+        <div className="bg-white rounded-lg shadow-lg overflow-hidden flex">
+          {/* Left: Form */}
+          <div className="flex-1 p-6">
+            <div className="text-center mb-4">
+              <div className="text-xl font-black"><span className="text-brand-600">BETTING</span><span className="text-dark-900">PRO</span></div>
+            </div>
 
-        {/* Quick Demo */}
-        <div className="bg-dark-800 border border-dark-700 rounded-lg p-3 mb-3">
-          <div className="text-[10px] text-dark-400 font-semibold mb-2 text-center uppercase">Quick Demo Login</div>
-          <div className="grid grid-cols-3 gap-2">
-            <button onClick={() => demoLogin('admin', 'admin123', 'Admin')} disabled={loading}
-              className="bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-500 hover:to-purple-600 text-white py-2 rounded text-xs font-bold transition-all disabled:opacity-50">
-              ⚙️ Admin
-            </button>
-            <button onClick={() => demoLogin('bookmaker1', 'bookmaker123', 'Bookmaker')} disabled={loading}
-              className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 text-white py-2 rounded text-xs font-bold transition-all disabled:opacity-50">
-              📊 Bookmaker
-            </button>
-            <button onClick={() => demoLogin('player1', 'player123', 'Player')} disabled={loading}
-              className="bg-gradient-to-r from-green-600 to-emerald-700 hover:from-green-500 hover:to-emerald-600 text-white py-2 rounded text-xs font-bold transition-all disabled:opacity-50">
-              🎮 Player
-            </button>
-          </div>
-        </div>
+            <div className="text-xs text-gray-500 font-semibold mb-1">USERNAME / MOBILE NUMBER</div>
+            <input type="text" className="input-field mb-3" value={form.username} onChange={e => setForm({ ...form, username: e.target.value })} />
 
-        {/* Form */}
-        <div className="bg-dark-800 border border-dark-700 rounded-lg p-4">
-          <div className="flex mb-4 bg-dark-900 rounded p-0.5">
-            <button onClick={() => setIsRegister(false)} className={`flex-1 py-2 rounded text-xs font-bold transition-all ${!isRegister ? 'bg-primary-500 text-dark-900' : 'text-dark-400'}`}>
-              LOGIN
-            </button>
-            <button onClick={() => setIsRegister(true)} className={`flex-1 py-2 rounded text-xs font-bold transition-all ${isRegister ? 'bg-primary-500 text-dark-900' : 'text-dark-400'}`}>
-              REGISTER
-            </button>
-          </div>
+            <div className="text-xs text-gray-500 font-semibold mb-1">PASSWORD</div>
+            <input type="password" className="input-field mb-3" value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} />
 
-          <form onSubmit={handleSubmit} className="space-y-3">
-            <input type="text" placeholder="Username" required className="input-field"
-              value={form.username} onChange={e => setForm({ ...form, username: e.target.value })} />
-            <input type="password" placeholder="Password" required className="input-field"
-              value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} />
             {isRegister && (
               <>
-                <input type="text" placeholder="Full Name" className="input-field" value={form.full_name} onChange={e => setForm({ ...form, full_name: e.target.value })} />
-                <input type="tel" placeholder="Phone Number" className="input-field" value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} />
+                <div className="text-xs text-gray-500 font-semibold mb-1">FULL NAME</div>
+                <input type="text" className="input-field mb-3" value={form.full_name} onChange={e => setForm({ ...form, full_name: e.target.value })} />
+                <div className="text-xs text-gray-500 font-semibold mb-1">PHONE</div>
+                <input type="tel" className="input-field mb-3" value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} />
               </>
             )}
-            <button type="submit" disabled={loading}
-              className="w-full py-3 bg-gradient-to-r from-primary-500 to-primary-400 hover:from-primary-600 hover:to-primary-500 rounded font-black text-dark-900 text-sm transition-all disabled:opacity-50">
-              {loading ? 'Please wait...' : isRegister ? 'CREATE ACCOUNT' : 'LOGIN'}
+
+            <label className="flex items-center gap-2 text-xs text-gray-500 mb-2">
+              <input type="checkbox" className="rounded" /> Remember Me?
+            </label>
+
+            <button onClick={() => !isRegister ? document.getElementById('loginForm')?.requestSubmit() : null} className="text-xs text-brand-600 hover:underline mb-3 block">
+              Forgot Password/Username?
             </button>
-          </form>
+
+            <form id="loginForm" onSubmit={handleSubmit} className="space-y-2">
+              <button type="submit" disabled={loading} className="w-full py-2.5 bg-dark-800 text-white rounded font-bold text-sm hover:bg-dark-900 disabled:opacity-50">
+                {isRegister ? 'REGISTER' : 'LOG IN'}
+              </button>
+            </form>
+
+            <button onClick={demoLogin} disabled={loading} className="w-full py-2.5 bg-white border-2 border-dark-800 text-dark-800 rounded font-bold text-sm hover:bg-gray-50 mt-2 disabled:opacity-50">
+              LOGIN WITH DEMO ID
+            </button>
+
+            <button onClick={() => setIsRegister(!isRegister)} className="w-full text-center text-xs text-brand-600 hover:underline mt-3">
+              {isRegister ? 'Already have an account? Login' : "Don't have an account? Register"}
+            </button>
+
+            <div className="text-center text-[10px] text-gray-400 mt-4">
+              Powered By <span className="text-brand-600 font-bold">BettingPro</span>
+            </div>
+          </div>
+
+          {/* Right: Sports Banner */}
+          <div className="hidden sm:flex w-48 bg-gradient-to-b from-green-500 to-blue-600 items-center justify-center p-4 relative">
+            <div className="text-center">
+              <div className="text-6xl mb-2">🏏⚽🎾</div>
+              <div className="text-white font-black text-2xl">SPORTS</div>
+              <div className="text-cyan-200 font-black text-xl">BOOK</div>
+            </div>
+          </div>
         </div>
 
-        <div className="text-center mt-4 text-[10px] text-dark-500">Play Responsibly | 18+ Only</div>
+        {/* Quick Role Login (for demo) */}
+        <div className="bg-white rounded-lg shadow-lg mt-3 p-3">
+          <div className="text-[10px] text-gray-400 font-semibold mb-2 text-center">QUICK ROLE LOGIN (DEMO)</div>
+          <div className="grid grid-cols-3 gap-2">
+            <button onClick={() => quickLogin('admin', 'admin123', 'Admin')} disabled={loading}
+              className="bg-purple-600 text-white py-2 rounded text-xs font-bold hover:bg-purple-700 disabled:opacity-50">⚙️ Admin</button>
+            <button onClick={() => quickLogin('bookmaker1', 'bookmaker123', 'Bookmaker')} disabled={loading}
+              className="bg-blue-600 text-white py-2 rounded text-xs font-bold hover:bg-blue-700 disabled:opacity-50">📊 Bookmaker</button>
+            <button onClick={() => quickLogin('player1', 'player123', 'Player')} disabled={loading}
+              className="bg-green-600 text-white py-2 rounded text-xs font-bold hover:bg-green-700 disabled:opacity-50">🎮 Player</button>
+          </div>
+        </div>
       </div>
     </div>
   );

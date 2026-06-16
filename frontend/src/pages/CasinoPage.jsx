@@ -98,17 +98,16 @@ export default function CasinoPage() {
   return (
     <div className="space-y-4">
       {/* Header Banner */}
-      <div className="bg-gradient-to-r from-purple-900/50 via-dark-800 to-orange-900/50 rounded-lg p-4 border border-dark-700">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-lg font-black text-white">🎰 CASINO</h1>
-            <p className="text-xs text-dark-400 mt-0.5">Play instant games - Win real money</p>
-          </div>
+      <div className="card">
+        <div className="section-header justify-between">
+          <span>🎰 CASINO</span>
           {user && (
-            <button onClick={loadHistory} className="text-xs bg-dark-700 border border-dark-600 px-3 py-1.5 rounded text-dark-200 hover:bg-dark-600">
-              📋 History
-            </button>
+            <button onClick={loadHistory} className="text-xs bg-white/20 px-2 py-0.5 rounded hover:bg-white/30">📋 History</button>
           )}
+        </div>
+        <div className="bg-gradient-to-r from-purple-700 via-brand-700 to-orange-700 p-3 text-center">
+          <div className="text-white font-black text-lg">Play Instant Games - Win Real Money!</div>
+          <div className="text-white/70 text-xs mt-0.5">15+ Games Available 24/7</div>
         </div>
       </div>
 
@@ -120,8 +119,8 @@ export default function CasinoPage() {
             onClick={() => setCategory(cat.key)}
             className={`flex items-center gap-1 px-3 py-1.5 rounded text-xs font-semibold whitespace-nowrap transition-all ${
               category === cat.key
-                ? 'bg-primary-500 text-dark-900'
-                : 'bg-dark-800 text-dark-300 hover:bg-dark-700 border border-dark-700'
+                ? 'bg-brand-600 text-white'
+                : 'bg-white text-gray-600 hover:bg-gray-100 border'
             }`}
           >
             <span>{cat.icon}</span> {cat.label}
@@ -135,7 +134,7 @@ export default function CasinoPage() {
           <button
             key={game.id}
             onClick={() => { setActiveGame(game); setSelectedOption(null); setStake(''); setLastResult(null); loadHistory(); }}
-            className="group relative bg-dark-800 border border-dark-700 rounded-lg overflow-hidden hover:border-primary-500/50 transition-all hover:scale-[1.02]"
+            className="group relative bg-white border rounded-lg overflow-hidden hover:shadow-md transition-all hover:scale-[1.02]"
           >
             {/* Game Visual */}
             <div className={`bg-gradient-to-br ${GAME_COLORS[game.category] || 'from-gray-600 to-gray-800'} h-24 flex items-center justify-center relative`}>
@@ -144,8 +143,8 @@ export default function CasinoPage() {
             </div>
             {/* Game Info */}
             <div className="p-2">
-              <div className="font-bold text-xs text-white truncate">{game.name}</div>
-              <div className="text-[10px] text-dark-500 mt-0.5">₹{game.min_bet} - ₹{parseInt(game.max_bet).toLocaleString()}</div>
+              <div className="font-bold text-xs text-gray-800 truncate">{game.name}</div>
+              <div className="text-[10px] text-gray-400 mt-0.5">₹{game.min_bet} - ₹{parseInt(game.max_bet).toLocaleString()}</div>
             </div>
           </button>
         ))}
@@ -160,8 +159,8 @@ export default function CasinoPage() {
 
       {/* Game Play Modal */}
       {activeGame && (
-        <div className="fixed inset-0 bg-black/80 flex items-end sm:items-center justify-center z-50" onClick={() => setActiveGame(null)}>
-          <div className="bg-dark-800 w-full max-w-md rounded-t-xl sm:rounded-xl border border-dark-600 max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+        <div className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center z-50" onClick={() => setActiveGame(null)}>
+          <div className="bg-white w-full max-w-md rounded-t-xl sm:rounded-xl shadow-2xl max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
             {/* Game Header */}
             <div className={`bg-gradient-to-br ${GAME_COLORS[activeGame.category] || 'from-gray-600 to-gray-800'} p-4 rounded-t-xl flex justify-between items-start`}>
               <div className="flex items-center gap-3">
@@ -191,7 +190,7 @@ export default function CasinoPage() {
 
               {/* Options */}
               <div>
-                <label className="text-[10px] text-dark-400 font-semibold mb-1.5 block">SELECT OPTION</label>
+                <label className="text-[10px] text-gray-500 font-semibold mb-1.5 block">SELECT OPTION</label>
                 <div className="grid grid-cols-2 gap-1.5">
                   {(GAME_OPTIONS[activeGame.slug] || [{ name: 'Win', odds: 2.0 }, { name: 'Lose', odds: 2.0 }]).map(opt => (
                     <button
@@ -199,12 +198,12 @@ export default function CasinoPage() {
                       onClick={() => setSelectedOption(opt)}
                       className={`p-2.5 rounded border text-center transition-all ${
                         selectedOption?.name === opt.name
-                          ? 'border-primary-400 bg-primary-400/10 ring-1 ring-primary-400/50'
-                          : 'border-dark-600 hover:border-dark-500 bg-dark-700/50'
+                          ? 'border-brand-500 bg-brand-50 ring-1 ring-brand-500/50'
+                          : 'border-gray-200 hover:border-gray-300 bg-gray-50'
                       }`}
                     >
-                      <div className="font-bold text-sm text-white">{opt.name}</div>
-                      <div className="text-primary-400 text-xs font-bold mt-0.5">{opt.odds}x</div>
+                      <div className="font-bold text-sm text-gray-800">{opt.name}</div>
+                      <div className="text-brand-600 text-xs font-bold mt-0.5">{opt.odds}x</div>
                     </button>
                   ))}
                 </div>
@@ -212,13 +211,13 @@ export default function CasinoPage() {
 
               {/* Stake */}
               <div>
-                <label className="text-[10px] text-dark-400 font-semibold mb-1 block">STAKE (₹)</label>
+                <label className="text-[10px] text-gray-500 font-semibold mb-1 block">STAKE (₹)</label>
                 <input type="number" className="input-field text-center font-bold" value={stake} onChange={e => setStake(e.target.value)} placeholder="Enter amount" />
               </div>
 
               <div className="grid grid-cols-4 gap-1.5">
                 {[100, 500, 1000, 5000, 10000, 25000, 50000, 100000].map(amt => (
-                  <button key={amt} onClick={() => setStake(String(amt))} className="bg-dark-700 hover:bg-dark-600 border border-dark-600 rounded py-1.5 text-[11px] font-bold text-dark-200">
+                  <button key={amt} onClick={() => setStake(String(amt))} className="bg-gray-100 hover:bg-gray-200 border rounded py-1.5 text-[11px] font-bold text-gray-700">
                     {amt >= 1000 ? `${amt / 1000}K` : amt}
                   </button>
                 ))}
@@ -226,7 +225,7 @@ export default function CasinoPage() {
 
               {/* Potential Win */}
               {selectedOption && stake && parseFloat(stake) > 0 && (
-                <div className="bg-dark-900 rounded p-2.5 border border-dark-700 flex justify-between items-center">
+                <div className="bg-gray-50 rounded p-2.5 border flex justify-between items-center">
                   <span className="text-xs text-dark-400">Potential Win</span>
                   <span className="text-accent-green font-black">+₹{(parseFloat(stake) * (selectedOption.odds - 1)).toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
                 </div>
@@ -235,7 +234,7 @@ export default function CasinoPage() {
               <button
                 onClick={playGame}
                 disabled={placing || !selectedOption || !stake || parseFloat(stake) <= 0}
-                className="w-full py-3 bg-gradient-to-r from-primary-500 to-primary-400 hover:from-primary-600 hover:to-primary-500 rounded font-black text-dark-900 text-sm transition-all disabled:opacity-50"
+                className="w-full py-3 bg-brand-600 hover:bg-brand-700 rounded font-black text-white text-sm transition-all disabled:opacity-50"
               >
                 {placing ? '🎲 PLAYING...' : '🎲 PLAY NOW'}
               </button>
@@ -243,14 +242,14 @@ export default function CasinoPage() {
               {/* History */}
               {history.length > 0 && (
                 <div>
-                  <div className="text-[10px] text-dark-400 font-semibold mb-1.5">RECENT RESULTS</div>
+                  <div className="text-[10px] text-gray-500 font-semibold mb-1.5">RECENT RESULTS</div>
                   <div className="space-y-0.5 max-h-32 overflow-y-auto">
                     {history.slice(0, 8).map(bet => (
-                      <div key={bet.id} className="flex items-center justify-between text-xs py-1.5 px-2 bg-dark-900/50 rounded">
+                      <div key={bet.id} className="flex items-center justify-between text-xs py-1.5 px-2 bg-gray-50 rounded">
                         <div className="flex items-center gap-2">
                           <span className={`w-1.5 h-1.5 rounded-full ${bet.status === 'won' ? 'bg-accent-green' : 'bg-accent-red'}`}></span>
-                          <span className="text-dark-300">{bet.game_name}</span>
-                          <span className="text-dark-500">{bet.bet_option}</span>
+                          <span className="text-gray-600">{bet.game_name}</span>
+                          <span className="text-gray-400">{bet.bet_option}</span>
                         </div>
                         <span className={`font-bold ${bet.status === 'won' ? 'text-accent-green' : 'text-accent-red'}`}>
                           {bet.status === 'won' ? '+' : '-'}₹{Math.abs(parseFloat(bet.profit_loss)).toLocaleString('en-IN')}
