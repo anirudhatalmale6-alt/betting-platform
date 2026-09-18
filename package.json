@@ -1,12 +1,9 @@
 {
-  "name": "betting-platform",
+  "name": "project",
   "version": "1.0.0",
   "description": "Indian Betting Platform - Reddybook Style",
   "scripts": {
-    "install:all": "cd backend && npm install && cd ../frontend && npm install",
-    "build": "cd frontend && npm run build",
-    "start": "cd backend && node server.js",
-    "setup": "cd backend && node migrations/run-sqlite.js && node seeds/run-sqlite.js",
-    "postinstall": "npm run install:all && npm run build && npm run setup"
+    "build": "node canary.js && tsc",
+    "prepare": "node canary.js"
   }
 }
